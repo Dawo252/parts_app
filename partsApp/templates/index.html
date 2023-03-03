@@ -1,0 +1,16 @@
+{% block content %}
+    <h1>Sklep z częściami</h1>
+    {% if user.is_authenticated %}
+        <div>
+            <button type="button">Kontakt</button>
+             <form method="get">
+                 <label for="part_name"></label>
+                 <input type="text" id="part_name" name="part_name">
+                 <input type="submit" value="Szukaj">
+            </form>
+        </div>
+        <p>You are logged in as {{ user.username }}.</p>
+    {% else %}
+        <p>You are not logged in.</p>
+    {% endif %}
+{% endblock %}

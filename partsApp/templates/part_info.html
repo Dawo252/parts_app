@@ -1,0 +1,11 @@
+{% block content %}
+        {% for part in queryset %}
+            <p> {{ part.producer_name }}</p>
+            <p> {{ part.part_name }}</p>
+            {% for ca in part.car %}
+                <p> {{ ca }} </p>
+            {% endfor %}
+            <p> {{ part.amount }}</p>
+            <p> {{ part.price_netto }}</p>
+        {% endfor %}
+{% endblock %}
