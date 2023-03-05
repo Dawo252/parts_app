@@ -7,9 +7,11 @@
 {#            {% endfor %}#}
 {#            <p> {{ part.amount }}</p>#}
 {#            <p> {{ part.price_netto }}</p>#}
-            <form method="post">
+            <form method="post" action="./part_info">
                 {% csrf_token %}
-                <input type="submit" value="{{ part.part_name }}" name="input_value">
+{#                <a href="./part_info">#}
+                    <input type="submit" value="{{ part.part_name }}" name="input_value">
+{#                </a>#}
             </form>
         {% endfor %}
 {% endblock %}

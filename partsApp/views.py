@@ -6,7 +6,6 @@ from .forms import RegistrationForm, SearchParts
 from .models import Part
 from django.db.models import Q
 
-
 # class SearchResultsView(ListView):
 #     model = Part
 #     template_name = "index2.html"
@@ -24,31 +23,21 @@ def index(request):
         form = SearchParts(request.GET)
         if form.is_valid():
             query = request.GET.get("part_name")
-            # object_list2 = Part.objects.get(part_name=query)
             object_list = Part.objects.filter(
                 part_name__icontains=query
             )
             return render(request, 'index2.html', {'queryset': object_list})
     else:
         form = SearchParts()
-    data = None
     if request.method == 'POST':
-        input_value = request.POST.get('input_value')
-        if input_value:
-            data = Part.objects.filter(part_name=input_value)
-        return render(request, 'part_info.html', {'queryset': data})
+        request.session['part_selected'] = request.POST.get('input_value')
     return render(request, 'index.html', {'form': form})
 
 
-def part_info(request, first_param=None, second_param=None):
-    if request.method == "GET":
-        query = request.GET.dict()
-        # object_list2 = Part.objects.get(part_name=query)
-        # object_list = Part.objects.filter(
-        #     part_name__icontains=query
-        # )
-        return HttpResponse(request.GET.dict())
-        # return render(request, "part_info.html", {'queryset': object_list})
+def part_info(request):
+    input_value = request.session['part_selected']
+    data = Part.objects.filter(part_name=input_value)
+    return render(request, 'part_info.html', {'queryset': data})
 
 
 def login_view(request):
