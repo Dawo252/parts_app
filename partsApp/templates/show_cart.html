@@ -1,10 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% block content %}
+        {% for cart_item in cart_list %}
+            <p> {{ cart_item }} </p>
+        {% endfor %}
+        <a href="../"> przejdz do glownej</a>
+{% endblock %}
