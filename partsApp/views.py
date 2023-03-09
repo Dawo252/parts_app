@@ -71,7 +71,7 @@ class Index(View):
 # request.session.modified = True
 #     return render(request, 'part_info.html', {'queryset': data})
 
-""" spróbuj zrobić wózek na sesji, to będzie lepsze """
+""" spróbuj zrobić wózek na sesji, to będzie lepsze """ """ Gotowe """
 
 
 class Cart(View):
@@ -79,46 +79,33 @@ class Cart(View):
         request.session.modified = True
         value = 0
         cart_list = request.session['cart_list']
-        # request.session['cart'] = []
-        # cart = request.session['cart']
         cart = []
         for each in cart_list:
             data = Part.objects.get(part_name=each)
-            cart.append(data)
+            cart.append(model_to_dict(data))
             value += data.price_netto
         # data_ser = serializers.serialize('json', self.get_queryset())
+        request.session['cart'] = cart
         logging.warning(request.session['cart'])
         request.session.modified = True
-        return render(request, 'show_cart.html', {'cart_list': cart, 'value': value})
+        return render(request, 'show_cart.html', {'cart_list': request.session['cart'], 'value': value})
 
     def post(self, request):
         value = 0
         value2 = request.POST.get('delete')
         logging.warning(value2)
-        logging.warning(request.session['cart_list'])
+        logging.warning(request.session['cart'])
         part_to_delete = request.POST.get('delete')
-        for ind, each in enumerate(request.session['cart_list']):
+        for ind, each in enumerate(request.session['cart']):
             if str(each) == part_to_delete:
+                del request.session['cart'][ind]
                 del request.session['cart_list'][ind]
                 break
-        cart = []
-        cart_list = request.session['cart_list']
-        for each in cart_list:
-            data = Part.objects.get(part_name=each)
-            cart.append(data)
-            value += data.price_netto
-        # logging.warning(request.session['cart'].index(part_to_delete))
-        # logging.warning(request.session['cart'][0])
-        # logging.warning(str(request.session['cart'][0]) == part_to_delete)
-        # return HttpResponse('nie dziala')
-        # logging.warning(request.session['cart'].index(part_to_delete))
-        # del request.session['cart'][part_to_delete]
-        # for each in request.session['cart'][:]:
-        #     value += each.price_netto
-        # # data_ser = serializers.serialize('json', self.get_queryset())
-        # logging.warning(request.session['cart'])
+        for each in request.session['cart']:
+            value += each['price_netto']
         request.session.modified = True
-        return render(request, 'show_cart.html', {'cart_list': cart, 'value': value})
+        return render(request, 'show_cart.html', {'cart_list': request.session['cart'], 'value': value})
+
 
 def login_view(request):
     if request.method == 'POST':
