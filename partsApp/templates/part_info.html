@@ -7,10 +7,10 @@
             {% endfor %}
             <p> {{ part.amount }}</p>
             <p> {{ part.price_netto }}</p>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" value="{{ part }}" name="add"> add to cart </button>
+            </form>
         {% endfor %}
-        <form method="post">
-            {% csrf_token %}
-            <button type="submit" value="add_to_cart"> dodaj do koszyka </button>
-        </form>
         <a href="./cart"> przejdz do koszyka</a>
 {% endblock %}

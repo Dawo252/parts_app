@@ -1,6 +1,11 @@
 {% block content %}
         {% for cart_item in cart_list %}
-            <p> {{ cart_item }} </p>
+            <p> {{ cart_item.part_name }} - {{ cart_item.producer_name }}: {{ cart_item.price_netto }} </p>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" value="{{ cart_item }}" name="delete">delete from cart</button>
+            </form>
         {% endfor %}
+        <p>overall price: {{ value }}</p>
         <a href="../"> przejdz do glownej</a>
 {% endblock %}

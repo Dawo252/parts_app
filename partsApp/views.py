@@ -6,6 +6,8 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from .forms import RegistrationForm, SearchParts
 from .models import Part
+from django.views.generic import TemplateView, View
+from django.forms.models import model_to_dict
 from django.db.models import Q
 
 # class SearchResultsView(ListView):
@@ -20,33 +22,41 @@ from django.db.models import Q
 #         return object_list
 
 
-def index(request):
-    if request.method == 'GET':
+class Index(View):
+    def get(self, request):
+        request.session.modified = True
         form = SearchParts(request.GET)
         if form.is_valid():
             query = request.GET.get("part_name")
             object_list = Part.objects.filter(
                 part_name__icontains=query
             )
+            request.session.modified = True
             return render(request, 'index2.html', {'queryset': object_list})
-    else:
-        form = SearchParts()
-        ### wazne do koszyka, i ogolnie do zapisywania sesji przy przenoszeniu na strone
-    if request.method == 'POST' and request.POST.get('add_to_cart'):
-        input_value = request.session['part_selected']
-        data = Part.objects.filter(part_name=input_value)
-        if 'cart_list' not in request.session or not request.session['cart_list']:
-            request.session['cart_list'] = [input_value]
+
         else:
-            request.session['cart_list'].append(input_value)
-        logging.warning(request.session['cart_list'])
-        request.session.modified = True
-    if request.method == 'POST':
-        input_value = request.session['part_selected']
-        data = Part.objects.filter(part_name=input_value)
-        request.session['part_selected'] = request.POST.get('part_selected')
-        return render(request, 'part_info.html', {'queryset': data})
-    return render(request, 'index.html', {'form': form})
+            form = SearchParts()
+            request.session.modified = True
+            return render(request, 'index.html', {'form': form})
+
+    def post(self, request):
+        if request.POST.get('part_selected'):
+            request.session['part_selected'] = request.POST.get('part_selected')
+            logging.warning(request.POST.get('part_selected'))
+            input_value = request.session['part_selected']
+            data = Part.objects.filter(part_name=input_value)
+            request.session.modified = True
+            return render(request, 'part_info.html', {'queryset': data})
+        else:
+            input_value = request.session['part_selected']
+            data = Part.objects.filter(part_name=input_value)
+            if 'cart_list' not in request.session or not request.session['cart_list']:
+                request.session['cart_list'] = [input_value]
+            else:
+                request.session['cart_list'].append(input_value)
+            logging.warning(request.session['cart_list'])
+            request.session.modified = True
+            return render(request, 'part_info.html', {'queryset': data})
 
 
 # def part_info(request):
@@ -58,15 +68,57 @@ def index(request):
 #         else:
 #             request.session['cart_list'].append(input_value)
 #         logging.warning(request.session['cart_list'])
-#     request.session.modified = True
+# request.session.modified = True
 #     return render(request, 'part_info.html', {'queryset': data})
 
+""" spróbuj zrobić wózek na sesji, to będzie lepsze """
 
-def cart(request):
-    cart_list = request.session['cart_list']
-    request.session.modified = True
-    return render(request, 'show_cart.html', {'cart_list': cart_list})
 
+class Cart(View):
+    def get(self, request):
+        request.session.modified = True
+        value = 0
+        cart_list = request.session['cart_list']
+        # request.session['cart'] = []
+        # cart = request.session['cart']
+        cart = []
+        for each in cart_list:
+            data = Part.objects.get(part_name=each)
+            cart.append(data)
+            value += data.price_netto
+        # data_ser = serializers.serialize('json', self.get_queryset())
+        logging.warning(request.session['cart'])
+        request.session.modified = True
+        return render(request, 'show_cart.html', {'cart_list': cart, 'value': value})
+
+    def post(self, request):
+        value = 0
+        value2 = request.POST.get('delete')
+        logging.warning(value2)
+        logging.warning(request.session['cart_list'])
+        part_to_delete = request.POST.get('delete')
+        for ind, each in enumerate(request.session['cart_list']):
+            if str(each) == part_to_delete:
+                del request.session['cart_list'][ind]
+                break
+        cart = []
+        cart_list = request.session['cart_list']
+        for each in cart_list:
+            data = Part.objects.get(part_name=each)
+            cart.append(data)
+            value += data.price_netto
+        # logging.warning(request.session['cart'].index(part_to_delete))
+        # logging.warning(request.session['cart'][0])
+        # logging.warning(str(request.session['cart'][0]) == part_to_delete)
+        # return HttpResponse('nie dziala')
+        # logging.warning(request.session['cart'].index(part_to_delete))
+        # del request.session['cart'][part_to_delete]
+        # for each in request.session['cart'][:]:
+        #     value += each.price_netto
+        # # data_ser = serializers.serialize('json', self.get_queryset())
+        # logging.warning(request.session['cart'])
+        request.session.modified = True
+        return render(request, 'show_cart.html', {'cart_list': cart, 'value': value})
 
 def login_view(request):
     if request.method == 'POST':

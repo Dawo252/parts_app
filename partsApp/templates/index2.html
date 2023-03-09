@@ -10,7 +10,7 @@
             <form method="post">
                 {% csrf_token %}
 {#                <a href="./part_info">#}
-                <button type="submit" value="{{ part }}" name="part_selected"> {{ part.part_name }}</button>
+                <button type="submit" value="{{ part }}" name="part_selected"> {{ part }}</button>
 {#                </a>#}
             </form>
         {% endfor %}
