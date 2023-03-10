@@ -9,6 +9,10 @@ from .models import Part
 from django.views.generic import TemplateView, View
 from django.forms.models import model_to_dict
 from django.db.models import Q
+import asyncio
+from django.db import transaction
+from django.http import JsonResponse
+from asgiref.sync import sync_to_async
 
 # class SearchResultsView(ListView):
 #     model = Part
@@ -50,6 +54,7 @@ class Index(View):
         else:
             input_value = request.session['part_selected']
             data = Part.objects.filter(part_name=input_value)
+            # request.session['part_selected'] = data.ge
             if 'cart_list' not in request.session or not request.session['cart_list']:
                 request.session['cart_list'] = [input_value]
             else:
@@ -105,6 +110,24 @@ class Cart(View):
             value += each['price_netto']
         request.session.modified = True
         return render(request, 'show_cart.html', {'cart_list': request.session['cart'], 'value': value})
+
+    async def post2(self, request):
+        if request.POST.get('buy'):
+            for part in request.session['cart']:
+                item = await asyncio.get_event_loop().run_in_executor(None, Part.objects.select_for_update().get(id=part['id']))
+                if not item.available:
+                    return JsonResponse({'error': 'Item is not available'})
+                try:
+                    with transaction.atomic():
+                        item = await asyncio.get_event_loop().run_in_executor(None,
+                                                                              Part.objects.select_for_update().get(id=part['id']))
+                        if not item.available:
+                            return JsonResponse({'error': 'Item is not available'})
+                        item.available = False
+                        item.save()
+                except Exception as e:
+                    return JsonResponse({'error': str(e)})
+            return JsonResponse({'success': 'Item purchased successfully'})
 
 
 def login_view(request):
