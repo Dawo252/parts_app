@@ -10,12 +10,23 @@ class Warehouse(models.Model):
     warehouse_street = models.CharField(max_length=150)
     warehouse_open = models.BooleanField(default=True)
 
+    def __str__(self):
+        return self.warehouse_name
+
+
+class Car(models.Model):
+    car_name = models.CharField(max_length=100)
+    car_model = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f'{self.car_name} {self.car_model}'
+
 
 class Part(models.Model):
     warehouse = models.ForeignKey(Warehouse, on_delete=models.CASCADE, related_name='parts')
     producer_name = models.CharField(max_length=100)
     part_name = models.CharField(max_length=100)
-    car = fields.ArrayField(models.CharField(max_length=50))
+    car = models.ManyToManyField(Car)
     price_netto = models.FloatField(default=0)
     discount_price = models.FloatField(blank=True, null=True)
     amount = models.IntegerField(default=0)
