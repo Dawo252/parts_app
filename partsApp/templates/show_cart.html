@@ -1,10 +1,15 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% block content %}
+        {% for cart_item in cart_list %}
+            <p> {{ cart_item.part_name }} - {{ cart_item.producer_name }}: {{ cart_item.price_netto }} </p>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" value="{{ cart_item }}" name="delete">delete from cart</button>
+            </form>
+        {% endfor %}
+        <form method="post2">
+            {% csrf_token %}
+            <button type="submit" value="buy" name="buy">buy</button>
+        </form>
+        <p>overall price: {{ value }}</p>
+        <a href="../"> przejdz do glownej</a>
+{% endblock %}
